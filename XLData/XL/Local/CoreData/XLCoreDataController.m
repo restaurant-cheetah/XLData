@@ -24,6 +24,7 @@
 // THE SOFTWARE.
 
 #import "XLCoreDataController.h"
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
 
 @interface XLCoreDataController()
 
@@ -237,7 +238,9 @@
                 [self.tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:self.rowAnimationType];
                 break;
             case NSFetchedResultsChangeUpdate:
-                [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:self.rowAnimationType];
+                if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"9.0.0")) {
+                    [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:self.rowAnimationType];
+                }
                 break;
         }
     }
