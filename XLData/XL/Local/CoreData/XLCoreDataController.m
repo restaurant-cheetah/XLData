@@ -24,6 +24,7 @@
 // THE SOFTWARE.
 
 #import "XLCoreDataController.h"
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
 
 @interface XLCoreDataController()
 
@@ -84,6 +85,7 @@
     _beginUpdates                                        = NO;
     self.fetchedResultsController                        = nil;
     _isEmptyState = NO;
+    _rowAnimationType = UITableViewRowAnimationAutomatic;
 }
 
 -(void)reloadDataSet
@@ -195,10 +197,10 @@
     if (self.dataStoreControllerType == XLDataStoreControllerTypeTableView){
         switch (type) {
             case NSFetchedResultsChangeInsert:
-                [self.tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationAutomatic];
+                [self.tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:self.rowAnimationType];
                 break;
             case NSFetchedResultsChangeDelete:
-                [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationAutomatic];
+                [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:self.rowAnimationType];
                 break;
             default:
                 NSParameterAssert(YES);
@@ -226,17 +228,19 @@
     if (self.dataStoreControllerType == XLDataStoreControllerTypeTableView){
         switch (type) {
             case NSFetchedResultsChangeInsert:
-                [self.tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+                [self.tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:self.rowAnimationType];
                 break;
             case NSFetchedResultsChangeDelete:
-                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:self.rowAnimationType];
                 break;
             case NSFetchedResultsChangeMove:
-                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-                [self.tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:self.rowAnimationType];
+                [self.tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:self.rowAnimationType];
                 break;
             case NSFetchedResultsChangeUpdate:
-                [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+                if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"9.0.0")) {
+                    [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:self.rowAnimationType];
+                }
                 break;
         }
     }
