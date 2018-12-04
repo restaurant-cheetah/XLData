@@ -29,12 +29,10 @@
 #import "UIScrollView+SVInfiniteScrolling.h"
 #import "XLRemoteCoreDataController.h"
 
-
 @implementation XLRemoteCoreDataController
 {
     UIView * _networkStatusView;
     NSTimer * _searchDelayTimer;
-    BOOL _isConnectedToInternet;
 }
 
 @synthesize dataLoader = _dataLoader;
@@ -73,7 +71,6 @@
     _searchDelayTimer = nil;
     self.options = XLRemoteDataStoreControllerOptionDefault;
     self.dataLoader = nil;
-    _isConnectedToInternet = YES;
 }
 
 #pragma mark - Properties
@@ -220,7 +217,7 @@
                          weakSelf.networkStatusView.alpha = 0.0f;
                      }
                      completion:^(BOOL finished) {
-                         if (finished && _isConnectedToInternet){
+                         if (finished && [AFNetworkReachabilityManager sharedManager].isReachable){
                              [weakSelf.networkStatusView.superview sendSubviewToBack:weakSelf.networkStatusView];
                          }
                      }];
@@ -276,12 +273,12 @@
 
 -(void)updateNoInternetConnectionOverlayIfNeeded:(BOOL)animated
 {
-    AFHTTPSessionManager * sessionManager;
-    if ( !(sessionManager = ([self sessionManagerForDataLoader:self.dataLoader])) || (_isConnectedToInternet = ([sessionManager.reachabilityManager
-                                    networkReachabilityStatus] != AFNetworkReachabilityStatusNotReachable))){
+    if ([[AFNetworkReachabilityManager sharedManager] isReachable] == YES)
+    {
         [self.remoteControllerDelegate dataController:self hideNoInternetConnection:animated];
     }
-    else{
+    else
+    {
         [self.remoteControllerDelegate dataController:self showNoInternetConnection:animated];
     }
 }
