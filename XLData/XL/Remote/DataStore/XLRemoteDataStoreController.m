@@ -269,12 +269,12 @@
 
 -(void)updateNoInternetConnectionOverlayIfNeeded:(BOOL)animated
 {
-    AFHTTPSessionManager * sessionManager;
-    if ( !(sessionManager = ([self sessionManagerForDataLoader:self.dataLoader])) || (_isConnectedToInternet = ([sessionManager.reachabilityManager
-                                                                                                                 networkReachabilityStatus] != AFNetworkReachabilityStatusNotReachable))){
+    if ((_isConnectedToInternet = ([[AFNetworkReachabilityManager sharedManager] isReachable])))
+    {
         [self.remoteControllerDelegate dataController:self hideNoInternetConnection:animated];
     }
-    else{
+    else
+    {
         [self.remoteControllerDelegate dataController:self showNoInternetConnection:animated];
     }
 }
