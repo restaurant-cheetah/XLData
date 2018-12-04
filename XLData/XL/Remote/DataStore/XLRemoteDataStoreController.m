@@ -34,7 +34,6 @@
 {
     UIView * _networkStatusView;
     NSTimer * _searchDelayTimer;
-    BOOL _isConnectedToInternet;
 }
 
 @synthesize dataLoader = _dataLoader;
@@ -74,7 +73,6 @@
     _searchDelayTimer = nil;
     self.options = XLRemoteDataStoreControllerOptionDefault;
     self.dataLoader = nil;
-    _isConnectedToInternet = YES;
 }
 
 #pragma mark - Properties
@@ -209,7 +207,7 @@
                          weakSelf.networkStatusView.alpha = 0.0f;
                      }
                      completion:^(BOOL finished) {
-                         if (finished && _isConnectedToInternet){
+                         if (finished && [AFNetworkReachabilityManager sharedManager].isReachable){
                              [weakSelf.networkStatusView.superview sendSubviewToBack:weakSelf.networkStatusView];
                          }
                      }];
@@ -269,7 +267,7 @@
 
 -(void)updateNoInternetConnectionOverlayIfNeeded:(BOOL)animated
 {
-    if ((_isConnectedToInternet = ([[AFNetworkReachabilityManager sharedManager] isReachable])))
+    if ([[AFNetworkReachabilityManager sharedManager] isReachable])
     {
         [self.remoteControllerDelegate dataController:self hideNoInternetConnection:animated];
     }
