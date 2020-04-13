@@ -125,35 +125,40 @@ NSString * const kXLRemoteDataLoaderDefaultKeyForNonDictionaryResponse = @"data"
 {
     NSMutableURLRequest * request = self.prepareURLRequest;
     XLDataLoader * __weak weakSelf = self;
-    return [[self sessionManagerForDataLoader:self] dataTaskWithRequest:request completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
-        if (error) {
-            if (responseObject){
-                NSMutableDictionary * newUserInfo = [error.userInfo mutableCopy];
-                [newUserInfo setObject:responseObject forKey:AFNetworkingTaskDidCompleteSerializedResponseKey];
-                NSError * newError = [NSError errorWithDomain:error.domain code:error.code userInfo:newUserInfo];
-                [weakSelf dataLoaderDidFailLoadData:weakSelf withError:newError];
-            }
-            else{
-                [weakSelf dataLoaderDidFailLoadData:weakSelf withError:error];
-            }
-        } else {
-            NSDictionary * data = [responseObject isKindOfClass:[NSDictionary class]] ? responseObject : @{ weakSelf.collectionKeyPath : responseObject };
-            if ([weakSelf.storeDelegate respondsToSelector:@selector(dataLoader:convertJsonDataToModelObject:)]){
-                data = [self.storeDelegate dataLoader:weakSelf convertJsonDataToModelObject:data];
-            }
-            self.loadedData = data;
-            void (^completionHandler)() = ^{
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    _isLoadingData = NO;
-                    _hasMoreToLoad = (weakSelf.limit != 0 && (weakSelf.loadedDataItems.count >= weakSelf.limit));
-                    [weakSelf dataLoaderDidLoadData:weakSelf];
-                });
-            };
-            if ([weakSelf.storeDelegate respondsToSelector:@selector(dataLoaderUpdateDataStore:completionHandler:)]){
-                [weakSelf.storeDelegate dataLoaderUpdateDataStore:weakSelf completionHandler:completionHandler];
-            }
-            else{
-                completionHandler();
+    return [[self sessionManagerForDataLoader:self] dataTaskWithRequest:request
+                                                         uploadProgress: nil
+                                                       downloadProgress:nil
+                                                      completionHandler:^(NSURLResponse * _Nonnull response, id  _Nullable responseObject, NSError * _Nullable error) {
+        {
+            if (error) {
+                if (responseObject){
+                    NSMutableDictionary * newUserInfo = [error.userInfo mutableCopy];
+                    [newUserInfo setObject:responseObject forKey:AFNetworkingTaskDidCompleteSerializedResponseKey];
+                    NSError * newError = [NSError errorWithDomain:error.domain code:error.code userInfo:newUserInfo];
+                    [weakSelf dataLoaderDidFailLoadData:weakSelf withError:newError];
+                }
+                else{
+                    [weakSelf dataLoaderDidFailLoadData:weakSelf withError:error];
+                }
+            } else {
+                NSDictionary * data = [responseObject isKindOfClass:[NSDictionary class]] ? responseObject : @{ weakSelf.collectionKeyPath : responseObject };
+                if ([weakSelf.storeDelegate respondsToSelector:@selector(dataLoader:convertJsonDataToModelObject:)]){
+                    data = [self.storeDelegate dataLoader:weakSelf convertJsonDataToModelObject:data];
+                }
+                self.loadedData = data;
+                void (^completionHandler)() = ^{
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        _isLoadingData = NO;
+                        _hasMoreToLoad = (weakSelf.limit != 0 && (weakSelf.loadedDataItems.count >= weakSelf.limit));
+                        [weakSelf dataLoaderDidLoadData:weakSelf];
+                    });
+                };
+                if ([weakSelf.storeDelegate respondsToSelector:@selector(dataLoaderUpdateDataStore:completionHandler:)]){
+                    [weakSelf.storeDelegate dataLoaderUpdateDataStore:weakSelf completionHandler:completionHandler];
+                }
+                else{
+                    completionHandler();
+                }
             }
         }
     }];
