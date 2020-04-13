@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
   end
   s.subspec 'CoreRemote' do |sp|
     sp.source_files = 'XLData/XL/CoreRemote/**/*.{h,m}'
-    sp.dependency 'AFNetworking', '~> 3.0'
+    sp.dependency 'AFNetworking', '~> 4.0'
   end
 
   s.subspec 'DataStore' do |sp|
